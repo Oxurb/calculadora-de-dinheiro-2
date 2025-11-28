@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Calculadora de Dinheiro</title>
+  <meta name="description" content="Calcule o total do seu dinheiro em moedas e notas.">
+  <style>
+    body {
+      margin: 0;
+      padding: 20px;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background-color: #e0f2e9; /* verde suave */
+      color: #2c3e50;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      min-height: 100vh;
+    }
+
+    .container {
+      background: white;
+      padding: 30px;
+      border-radius: 16px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+      width: 90%;
+      max-width: 400px;
+      text-align: center;
+    }
+
+    h1 {
+      font-size: 24px;
+      margin-bottom: 20px;
+      color: #27ae60;
+    }
+
+    #pergunta {
+      font-size: 18px;
+      margin: 20px 0;
+      min-height: 60px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    input {
+      width: 100%;
+      padding: 12px;
+      font-size: 18px;
+      border: 2px solid #b8eacf;
+      border-radius: 8px;
+      text-align: center;
+      margin: 15px 0;
+      box-sizing: border-box;
+    }
+
+    button {
+      background-color: #2ecc71;
+      color: white;
+      border: none;
+      padding: 12px 24px;
+      font-size: 18px;
+      border-radius: 8px;
+      cursor: pointer;
+      width: 100%;
+      font-weight: bold;
+    }
+
+    button:hover {
+      background-color: #27ae60;
+    }
+
+    #resultado {
+      white-space: pre-wrap;
+      text-align: left;
+      font-family: monospace;
+      background: #f8fdfa;
+      padding: 15px;
+      border-radius: 8px;
+      margin-top: 15px;
+    }
+
+    .hidden {
+      display: none;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>💰 Calculadora de Dinheiro</h1>
+
+    <!-- Fase de perguntas -->
+    <div id="fase-perguntas">
+      <div id="pergunta">Carregando...</div>
+      <input type="number" id="entrada" min="0" placeholder="Digite um número inteiro" />
+      <button id="botao-proximo">Próximo</button>
+    </div>
+
+    <!-- Fase de resultado -->
+    <div id="fase-resultado" class="hidden">
+      <div id="resultado"></div>
+      <button id="botao-recomecar" style="margin-top: 20px; background-color: #3498db;">Recomeçar</button>
+    </div>
+  </div>
+
+  <script>
+    // Valores: moeda de R$1 e notas
+    const valores = [1, 2, 5, 10, 20, 50, 100, 200];
+    let indice = 0;
+    const quantidades = {};
+
+    const fasePerguntas = document.getElementById('fase-perguntas');
+    const faseResultado = document.getElementById('fase-resultado');
+    const perguntaEl = document.getElementById('pergunta');
+    const entradaEl = document.getElementById('entrada');
+    const botaoProximo = document.getElementById('botao-proximo');
+    const botaoRecomecar = document.getElementById('botao-recomecar');
+    const resultadoEl = document.getElementById('resultado');
+
+    function mostrarPergunta() {
+      if (indice < valores.length) {
+        const valor = valores[indice];
+        const texto = valor === 1
+          ? 'Quantas moedas de R$ 1,00 você tem?'
+          : `Quantas notas de R$ ${valor} você tem?`;
+        perguntaEl.textContent = texto;
+        entradaEl.value = '';
+        entradaEl.focus();
+        fasePerguntas.classList.remove('hidden');
+        faseResultado.classList.add('hidden');
+      } else {
+        mostrarResultado();
+      }
+    }
+
+    function proximo() {
+      const valor = entradaEl.value.trim();
+      const qtd = valor === '' ? 0 : parseInt(valor, 10);
+
+      if (isNaN(qtd) || qtd < 0) {
+        alert('Por favor, insira um número inteiro maior ou igual a zero.');
+        return;
+      }
+
+      quantidades[valores[indice]] = qtd;
+      indice++;
+      mostrarPergunta();
+    }
+
+    function mostrarResultado() {
+      let total = 0;
+      let texto = 'Resumo:\n\n';
+
+      for (const valor of valores) {
+        const qtd = quantidades[valor] || 0;
+        const subtotal = valor * qtd;
+        total += subtotal;
+        if (qtd > 0) {
+          const tipo = valor === 1 ? 'moeda' : 'nota';
+          texto += `${qtd} ${tipo}${qtd !== 1 ? 's' : ''} de R$ ${valor} → R$ ${subtotal.toFixed(2)}\n`;
+        }
+      }
+
+      texto += `\nTotal: R$ ${total.toFixed(2)}`;
+
+      resultadoEl.textContent = texto;
+      fasePerguntas.classList.add('hidden');
+      faseResultado.classList.remove('hidden');
+    }
+
+    function reiniciar() {
+      indice = 0;
+      Object.keys(quantidades).forEach(k => delete quantidades[k]);
+      mostrarPergunta();
+    }
+
+    // Eventos
+    botaoProximo.addEventListener('click', proximo);
+    botaoRecomecar.addEventListener('click', reiniciar);
+    entradaEl.addEventListener('keyup', (e) => {
+      if (e.key === 'Enter') proximo();
+    });
+
+    // Iniciar
+    mostrarPergunta();
+  </script>
+</body>
+</html>
